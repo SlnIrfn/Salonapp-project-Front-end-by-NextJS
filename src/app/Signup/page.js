@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // Assuming you are using Next.js 13+
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,8 @@ export default function Signup() {
   });
 
   const [errors, setErrors] = useState({});
+  const [showSuccess, setShowSuccess] = useState(false);
+  const router = useRouter();
 
   const validate = () => {
     let tempErrors = {};
@@ -37,38 +40,48 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
-        try {
-            const response = await fetch('http://localhost:8080/api/Signup', { // Replace with your backend URL
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+      try {
+        const response = await fetch('http://localhost:8080/api/Signup', { // Replace with your backend URL
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
 
-            if (response.ok) {
-                console.log("Form submitted successfully");
-                // Handle success (e.g., show a success message or redirect)
-            } else {
-                console.error("Error submitting form", await response.text());
-                // Handle error (e.g., show an error message)
-            }
-        } catch (error) {
-            console.error("Network error", error);
-            // Handle network error
+        if (response.ok) {
+          setShowSuccess(true);
+          setFormData({
+            username: "",
+            phone: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+          });
+          setTimeout(() => {
+            setShowSuccess(false);
+            router.push("/Signin"); // Redirect to Signin page
+          }, 3000); // Show success notification for 3 seconds
+        } else {
+          console.error("Error submitting form", await response.text());
         }
+      } catch (error) {
+        console.error("Network error", error);
+      }
     }
-};
-
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-blue-100">
       <div className="relative w-96">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-blue-500 to-blue-200 rounded-lg transform rotate-[-10deg] z-0"></div>
         <div className="bg-white p-8 rounded-lg shadow-lg relative z-10">
-          <h2 className="text-2xl font-bold mb-6 font-sans text-black">
-            Signup
-          </h2>
+          <h2 className="text-2xl font-bold mb-6 font-sans text-black">Signup</h2>
+          {showSuccess && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+              You have signed up successfully!
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <div className="mb-6">
               <input
